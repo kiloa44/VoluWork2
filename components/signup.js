@@ -85,31 +85,28 @@ componentWillMount(){
       .auth()
       .createUserWithEmailAndPassword(this.state.email, this.state.password)
       .then((res) => {
-        console.log(res.user)
+        console.log(res.user.uid)
         res.user.updateProfile({
           displayName: this.state.displayName
         });
-        console.log('after updating')
-        let db = firebase.firestore();
-        console.log(db,res.user.uid);
-        let col = db.collection("users");
-        console.log(col)
-        col.doc(res.user.uid).set({
-          name: this.state.displayName,
-          longitude:this.state.longitude,
-          latitude:this.state.latitude,
-        }).then(()=>{
+        let info = {name: this.state.displayName,
+          longitude:this.state.longitude+0.01,
+          latitude:this.state.latitude+0.01,}
+        firebase.database().ref("users/"+res.user.uid).set(
+          info
+          ).then(()=>{
           console.log('Document successfully written');
         }).catch(function(error) {
           console.error("Error writing document: ", error);
         });
+        // ////////////////////////////////////
         this.setState({
           isLoading: false,
           displayName: '',
           email: '', 
           password: ''
         })
-        this.props.navigation.navigate('Login')
+        this.props.navigation.navigate('Dashboard');
       })
       .catch(error => this.setState({ errorMessage: error.message }))      
     }
@@ -135,6 +132,8 @@ componentWillMount(){
           style={styles.inputStyle}
           placeholder="Email"
           value={this.state.email}
+          // val => aaa@aa.com
+          // state.email => val
           onChangeText={(val) => this.updateInputVal(val, 'email')}
         />
         <TextInput
